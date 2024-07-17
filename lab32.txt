@@ -1,0 +1,163 @@
+#views.py
+from .models import Project
+from .forms import ProjectForm
+def project_list(request):
+    projects = Project.objects.all()
+    return render(request, 'course_registration/project_list.html', {'projects': projects})
+
+
+def add_project(request):
+    if request.method == 'POST':
+        form = ProjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('project_list')
+    else:
+        form = ProjectForm()
+        return render(request, 'course_registration/add_project.html', {'form': form})
+    
+
+
+#urls.py (course_registration/urls.py)
+… (to indicate rest of code)
+path('project_list/', views.project_list, name='project_list'),
+path('add_project/', views.add_project, name='add_project'),
+…
+
+
+#models.py
+class Project(models.Model):
+    topic = models.CharField(max_length=100)
+    languages_used = models.CharField(max_length=100)
+    duration = models.CharField(max_length=50)
+    def __str__(self):
+        return self.topic
+    
+
+#forms.py
+from .models import Project
+…
+class ProjectForm(forms.ModelForm):
+ class Meta:
+ model = Project
+ fields = ['topic', 'languages_used', 'duration']
+…
+
+
+
+#templates/course_registration/add_project.html (The CSS is optional)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Add Project</title>
+ <style>
+ body {
+ font-family: Arial, sans-serif;
+ margin: 0;
+ padding: 20px;
+ }
+ h1 {
+ color: #333;
+ }
+ form {
+ background-color: #f9f9f9;
+ padding: 20px;
+ border-radius: 5px;
+ }
+ label {
+ display: block;
+ margin-bottom: 5px;
+ }
+ input[type="text"] {
+ width: 100%;
+ padding: 8px;
+ margin-bottom: 10px;
+border-radius: 5px;
+ border: 1px solid #ccc;
+ }
+ button {
+ background-color: #007bff;
+ color: #fff;
+ padding: 10px 20px;
+ border: none;
+ border-radius: 5px;
+ cursor: pointer;
+ }
+ </style>
+</head>
+<body>
+ <h1>Add Project</h1>
+ <form method="post">
+ {% csrf_token %}
+ <label for="id_topic">Topic:</label>
+ {{ form.topic }}
+ <label for="id_languages_used">Languages used:</label>
+ {{ form.languages_used }}
+ <label for="id_duration">Duration:</label>
+ {{ form.duration }}
+ <button type="submit">Submit</button>
+ </form>
+</body>
+</html>
+
+
+
+#templates/course_registration/project_list.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Project List</title>
+ <style>
+ body {
+ font-family: Arial, sans-serif;
+ margin: 0;
+ padding: 20px;
+ }
+ h1 {
+color: #333;
+ }
+ ul {
+ list-style-type: none;
+ padding: 0;
+ }
+ li {
+ margin-bottom: 10px;
+ background-color: #f9f9f9;
+ padding: 10px;
+ border-radius: 5px;
+ }
+ a {
+ text-decoration: none;
+ color: #007bff;
+ }
+ </style>
+</head>
+<body>
+ <h1>Project List</h1>
+ <ul>
+ {% for project in projects %}
+ <li>
+ <strong>{{ project.topic }}</strong><br>
+ <em>Languages used:</em> {{ project.languages_used }}<br>
+ <em>Duration:</em> {{ project.duration }}
+ </li>
+ {% empty %}
+ <li>No projects available</li>
+ {% endfor %}
+ </ul>
+ <a href="{% url 'add_project' %}">Add Project</a>
+</body>
+</html>
+
+
+
+#admin.py
+…
+from .models import Student, Course, Project
+…
+admin.site.register(Project)
+
